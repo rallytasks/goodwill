@@ -8,6 +8,21 @@
   if (document.getElementById(WIDGET_ID)) return;
 
   var isOpen = false;
+  var canSubmit = false;
+
+  // Check if current user has feedback access
+  function checkAuth() {
+    fetch('/api/donor/profile', { credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (data && data.can_submit_feedback && !canSubmit) {
+          canSubmit = true;
+          init();
+        }
+      })
+      .catch(function () {});
+  }
+  checkAuth();
 
   var statusLabels = {
     'new': 'Submitted',
@@ -497,5 +512,5 @@
       });
   }
 
-  init();
+  // init() is called by checkAuth() when user has feedback access
 })();

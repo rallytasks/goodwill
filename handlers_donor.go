@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"os"
+	"strings"
 )
 
 func (s *server) handleProfile(w http.ResponseWriter, r *http.Request) {
@@ -17,7 +19,19 @@ func (s *server) handleProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonOK(w, donor)
+	adminPhone := os.Getenv("ADMIN_PHONE")
+	// Normalize: compare just digits
+	donorDigits := strings.TrimPrefix(donor.Phone, "+1")
+	canFeedback := adminPhone != "" && donorDigits == adminPhone
+
+	jsonOK(w, map[string]interface{}{
+		"id":                  donor.ID,
+		"phone":               donor.Phone,
+		"name":                donor.Name,
+		"email":               donor.Email,
+		"created_at":          donor.CreatedAt,
+		"can_submit_feedback": canFeedback,
+	})
 }
 
 func (s *server) handleUpdateProfile(w http.ResponseWriter, r *http.Request) {
