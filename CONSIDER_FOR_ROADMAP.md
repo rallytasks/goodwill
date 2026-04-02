@@ -54,3 +54,7 @@ _Submitted: 2026-04-02 17:47 UTC_
 ## [NORMAL] 2026-04-02 17:47 UTC
 items donated should be in a column and there should be a total on the donation receipt. the date says invalid even thought a valid date was selected
 _Submitted: 2026-04-02 17:47 UTC_
+
+## [NORMAL] 2026-04-02 17:49 UTC
+put donors by zip beneath the nps comments. make the nps comments scroll or paginate them
+_Submitted: 2026-04-02 17:49 UTC_
