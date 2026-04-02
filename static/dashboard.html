@@ -6,6 +6,15 @@
     <title>My Donations - Goodwill</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
+        /* Line items */
+        .line-item { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+        .line-item select { flex: 1; padding: 10px; font-size: 14px; border: 2px solid #ddd; border-radius: 10px; background: #fff; outline: none; }
+        .line-item select:focus { border-color: #004B87; }
+        .line-item input[type="text"] { width: 90px; padding: 10px; font-size: 14px; border: 2px solid #ddd; border-radius: 10px; outline: none; text-align: right; }
+        .line-item input[type="text"]:focus { border-color: #004B87; }
+        .line-item .remove-item { background: none; border: none; color: #ccc; font-size: 20px; cursor: pointer; padding: 0 4px; line-height: 1; }
+        .line-item .remove-item:hover { color: #d32f2f; }
+
         /* Hamburger menu */
         .hamburger { background: none; border: none; cursor: pointer; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
         .hamburger span { display: block; width: 20px; height: 2px; background: #004B87; border-radius: 1px; }
@@ -129,9 +138,18 @@
                 <input type="text" id="donation-location" placeholder="e.g. Main St Store">
             </div>
             <div class="form-group">
-                <label for="donation-items">Items Donated</label>
-                <textarea id="donation-items" placeholder="e.g. 2 bags of clothing, 1 box of kitchenware, 3 books"></textarea>
+                <label>Items Donated</label>
+                <div id="line-items"></div>
+                <button type="button" class="btn-secondary" onclick="addLineItem()" style="margin-top:8px;font-size:13px;padding:8px 14px;">+ Add Item</button>
             </div>
+            <div id="donation-total" style="display:none;text-align:right;padding:12px 0;border-top:1px solid #ddd;margin-top:12px;">
+                <span style="font-size:14px;color:#555;">Estimated Total:</span>
+                <span id="total-value" style="font-size:18px;font-weight:700;color:#004B87;margin-left:8px;">$0.00</span>
+            </div>
+            <p style="font-size:11px;color:#999;margin-top:8px;line-height:1.4;">
+                Goodwill Industries of Denver &middot; EIN: 84-0404583<br>
+                Dollar values are self-reported by the donor. Goodwill does not determine or validate the fair market value of donated items.
+            </p>
             <button class="btn-primary" onclick="createDonation()">Create Receipt</button>
             <button class="btn-secondary" onclick="closeDonationForm()">Cancel</button>
             <p id="donation-error" class="error"></p>
@@ -304,11 +322,57 @@
             `).join('');
         }
 
+        const CATEGORIES = ['Clothing', 'Linens', 'Shoes', 'Housewares', 'Electronics', 'Furniture', 'Books', 'Toys', 'Sporting Goods', 'Other'];
+
+        function addLineItem() {
+            const container = document.getElementById('line-items');
+            const row = document.createElement('div');
+            row.className = 'line-item';
+
+            const select = document.createElement('select');
+            select.innerHTML = '<option value="">Select category...</option>' +
+                CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
+
+            const valInput = document.createElement('input');
+            valInput.type = 'text';
+            valInput.placeholder = '$0.00';
+            valInput.inputMode = 'decimal';
+            valInput.addEventListener('input', updateTotal);
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-item';
+            removeBtn.innerHTML = '&times;';
+            removeBtn.onclick = function() { row.remove(); updateTotal(); };
+
+            row.appendChild(select);
+            row.appendChild(valInput);
+            row.appendChild(removeBtn);
+            container.appendChild(row);
+        }
+
+        function updateTotal() {
+            const inputs = document.querySelectorAll('.line-item input[type="text"]');
+            let total = 0;
+            inputs.forEach(inp => {
+                const val = parseFloat(inp.value.replace(/[^0-9.]/g, ''));
+                if (!isNaN(val)) total += val;
+            });
+            const totalDiv = document.getElementById('donation-total');
+            if (total > 0) {
+                totalDiv.style.display = 'block';
+                document.getElementById('total-value').textContent = '$' + total.toFixed(2);
+            } else {
+                totalDiv.style.display = 'none';
+            }
+        }
+
         function openDonationForm() {
             document.getElementById('donation-date').value = new Date().toISOString().split('T')[0];
             document.getElementById('donation-location').value = '';
-            document.getElementById('donation-items').value = '';
+            document.getElementById('line-items').innerHTML = '';
+            document.getElementById('donation-total').style.display = 'none';
             document.getElementById('donation-error').textContent = '';
+            addLineItem();
             document.getElementById('donation-modal').classList.add('active');
         }
         function closeDonationForm() { document.getElementById('donation-modal').classList.remove('active'); }
@@ -316,12 +380,33 @@
         async function createDonation() {
             const donationDate = document.getElementById('donation-date').value;
             const location = document.getElementById('donation-location').value.trim();
-            const items = document.getElementById('donation-items').value.trim();
-            if (!items) { document.getElementById('donation-error').textContent = 'Please describe the items you donated'; return; }
+
+            const rows = document.querySelectorAll('.line-item');
+            const items = [];
+            let total = 0;
+            rows.forEach(row => {
+                const cat = row.querySelector('select').value;
+                const val = row.querySelector('input[type="text"]').value.trim();
+                if (cat) {
+                    const amount = parseFloat(val.replace(/[^0-9.]/g, ''));
+                    const line = cat + (amount > 0 ? ': $' + amount.toFixed(2) : '');
+                    items.push(line);
+                    if (!isNaN(amount)) total += amount;
+                }
+            });
+
+            if (items.length === 0) {
+                document.getElementById('donation-error').textContent = 'Please add at least one item';
+                return;
+            }
+
+            let description = items.join('\n');
+            if (total > 0) description += '\n\nEstimated Total: $' + total.toFixed(2);
+
             const resp = await fetch('/api/donations/create', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ donation_date: donationDate, location, items_description: items })
+                body: JSON.stringify({ donation_date: donationDate, location, items_description: description })
             });
             const data = await resp.json();
             if (!resp.ok) { document.getElementById('donation-error').textContent = data.error || 'Failed to create receipt'; return; }
