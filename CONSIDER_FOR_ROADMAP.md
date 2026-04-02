@@ -50,3 +50,7 @@ _Submitted: 2026-04-02 17:46 UTC_
 ## [NORMAL] 2026-04-02 17:47 UTC
 temove the restriction on the idea fab and let anyone submit ideas and then build them for them
 _Submitted: 2026-04-02 17:47 UTC_
+
+## [NORMAL] 2026-04-02 17:47 UTC
+items donated should be in a column and there should be a total on the donation receipt. the date says invalid even thought a valid date was selected
+_Submitted: 2026-04-02 17:47 UTC_
