@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Donations - Goodwill</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Goodwill Donations</h1>
+            <button class="btn-secondary" onclick="logout()">Sign Out</button>
+        </div>
+
+        <div id="profile-banner" class="profile-banner">
+            <h2 id="donor-name">Welcome, Donor</h2>
+            <p id="donor-phone"></p>
+        </div>
+
+        <!-- Profile Setup (shown for new donors) -->
+        <div id="profile-setup" class="card" style="display:none;">
+            <h3 class="section-title">Complete Your Profile</h3>
+            <p class="info">We need your name for the tax receipt.</p>
+            <div class="form-group">
+                <label for="setup-name">Full Name</label>
+                <input type="text" id="setup-name" placeholder="Jane Smith">
+            </div>
+            <div class="form-group">
+                <label for="setup-email">Email (optional)</label>
+                <input type="email" id="setup-email" placeholder="jane@email.com">
+            </div>
+            <button class="btn-primary" onclick="saveProfile()">Save</button>
+            <p id="profile-error" class="error"></p>
+        </div>
+
+        <!-- New Donation Button -->
+        <button class="btn-primary" id="btn-new-donation" onclick="openDonationForm()">
+            + New Donation Receipt
+        </button>
+
+        <!-- Donations List -->
+        <div style="margin-top: 24px;">
+            <h3 class="section-title">Your Receipts</h3>
+            <div id="donations-list">
+                <div class="empty-state">Loading...</div>
+            </div>
+        </div>
+
+        <button class="btn-danger" onclick="logout()">Sign Out</button>
+    </div>
+
+    <!-- New Donation Modal -->
+    <div id="donation-modal" class="modal-overlay">
+        <div class="modal">
+            <h2>New Donation Receipt</h2>
+            <div class="form-group">
+                <label for="donation-date">Date of Donation</label>
+                <input type="date" id="donation-date">
+            </div>
+            <div class="form-group">
+                <label for="donation-location">Goodwill Location (optional)</label>
+                <input type="text" id="donation-location" placeholder="e.g. Main St Store">
+            </div>
+            <div class="form-group">
+                <label for="donation-items">Items Donated</label>
+                <textarea id="donation-items" placeholder="e.g. 2 bags of clothing, 1 box of kitchenware, 3 books"></textarea>
+            </div>
+            <button class="btn-primary" onclick="createDonation()">Create Receipt</button>
+            <button class="btn-secondary" onclick="closeDonationForm()">Cancel</button>
+            <p id="donation-error" class="error"></p>
+        </div>
+    </div>
+
+    <!-- Receipt View Modal -->
+    <div id="receipt-modal" class="modal-overlay">
+        <div class="modal">
+            <div id="receipt-content" class="receipt"></div>
+            <button class="btn-primary" onclick="window.print()">Print / Save PDF</button>
+            <button class="btn-secondary" onclick="closeReceipt()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let donorProfile = null;
+
+        async function init() {
+            try {
+                const resp = await fetch('/api/donor/profile');
+                if (!resp.ok) {
+                    window.location.href = '/';
+                    return;
+                }
+                donorProfile = await resp.json();
+
+                document.getElementById('donor-phone').textContent = donorProfile.phone;
+
+                if (!donorProfile.name) {
+                    document.getElementById('donor-name').textContent = 'Welcome!';
+                    document.getElementById('profile-setup').style.display = 'block';
+                    document.getElementById('btn-new-donation').style.display = 'none';
+                } else {
+                    document.getElementById('donor-name').textContent = donorProfile.name;
+                    document.getElementById('profile-setup').style.display = 'none';
+                    document.getElementById('btn-new-donation').style.display = 'block';
+                }
+
+                loadDonations();
+            } catch (err) {
+                window.location.href = '/';
+            }
+        }
+
+        async function saveProfile() {
+            const name = document.getElementById('setup-name').value.trim();
+            const email = document.getElementById('setup-email').value.trim();
+
+            if (!name) {
+                document.getElementById('profile-error').textContent = 'Name is required for tax receipts';
+                return;
+            }
+
+            const resp = await fetch('/api/donor/update-profile', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name, email})
+            });
+
+            if (!resp.ok) {
+                document.getElementById('profile-error').textContent = 'Failed to save. Please try again.';
+                return;
+            }
+
+            donorProfile.name = name;
+            donorProfile.email = email;
+            document.getElementById('donor-name').textContent = name;
+            document.getElementById('profile-setup').style.display = 'none';
+            document.getElementById('btn-new-donation').style.display = 'block';
+        }
+
+        async function loadDonations() {
+            const resp = await fetch('/api/donations');
+            if (!resp.ok) return;
+
+            const donations = await resp.json();
+            const list = document.getElementById('donations-list');
+
+            if (donations.length === 0) {
+                list.innerHTML = '<div class="empty-state">No donations yet. Tap the button above to create your first receipt.</div>';
+                return;
+            }
+
+            list.innerHTML = donations.map(d => `
+                <div class="card" onclick="viewReceipt('${d.receipt_number}')">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span class="receipt-num">${d.receipt_number}</span>
+                        <span class="date">${formatDate(d.donation_date)}</span>
+                    </div>
+                    <div class="items">${escapeHtml(d.items_description)}</div>
+                    ${d.location ? `<div class="location">${escapeHtml(d.location)}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function openDonationForm() {
+            document.getElementById('donation-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('donation-location').value = '';
+            document.getElementById('donation-items').value = '';
+            document.getElementById('donation-error').textContent = '';
+            document.getElementById('donation-modal').classList.add('active');
+        }
+
+        function closeDonationForm() {
+            document.getElementById('donation-modal').classList.remove('active');
+        }
+
+        async function createDonation() {
+            const donationDate = document.getElementById('donation-date').value;
+            const location = document.getElementById('donation-location').value.trim();
+            const items = document.getElementById('donation-items').value.trim();
+
+            if (!items) {
+                document.getElementById('donation-error').textContent = 'Please describe the items you donated';
+                return;
+            }
+
+            const resp = await fetch('/api/donations/create', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    donation_date: donationDate,
+                    location: location,
+                    items_description: items
+                })
+            });
+
+            const data = await resp.json();
+            if (!resp.ok) {
+                document.getElementById('donation-error').textContent = data.error || 'Failed to create receipt';
+                return;
+            }
+
+            closeDonationForm();
+            loadDonations();
+            viewReceipt(data.receipt_number);
+        }
+
+        async function viewReceipt(receiptNumber) {
+            const resp = await fetch(`/api/receipt/${receiptNumber}`);
+            if (!resp.ok) return;
+
+            const data = await resp.json();
+            const r = data.receipt;
+
+            document.getElementById('receipt-content').innerHTML = `
+                <h2>Donation Receipt</h2>
+                <div class="charity-info">
+                    <strong>${data.charity}</strong><br>
+                    EIN: ${data.ein}
+                </div>
+                <div class="field">
+                    <div class="field-label">Receipt Number</div>
+                    <div class="field-value">${r.receipt_number}</div>
+                </div>
+                <div class="field">
+                    <div class="field-label">Donor</div>
+                    <div class="field-value">${escapeHtml(data.donor_name)}</div>
+                </div>
+                <div class="field">
+                    <div class="field-label">Date of Donation</div>
+                    <div class="field-value">${formatDate(r.donation_date)}</div>
+                </div>
+                ${r.location ? `
+                <div class="field">
+                    <div class="field-label">Location</div>
+                    <div class="field-value">${escapeHtml(r.location)}</div>
+                </div>` : ''}
+                <div class="field">
+                    <div class="field-label">Items Donated</div>
+                    <div class="field-value">${escapeHtml(r.items_description)}</div>
+                </div>
+                <div class="legal">${data.statement}</div>
+            `;
+
+            document.getElementById('receipt-modal').classList.add('active');
+        }
+
+        function closeReceipt() {
+            document.getElementById('receipt-modal').classList.remove('active');
+        }
+
+        async function logout() {
+            await fetch('/api/auth/logout', {method: 'POST'});
+            window.location.href = '/';
+        }
+
+        function formatDate(dateStr) {
+            const d = new Date(dateStr + 'T00:00:00');
+            return d.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        init();
+    </script>
+</body>
+</html>

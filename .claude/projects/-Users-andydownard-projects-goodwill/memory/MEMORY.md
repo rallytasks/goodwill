@@ -1,0 +1,2 @@
+- [Andy - Goodwill Director](user_role.md) — Director at Goodwill, also runs PennyAI (Go/Railway/Twilio)
+- [Goodwill Donor Receipt Webapp](project_goodwill_donor_app.md) — QR → phone auth → e-receipt for in-kind donors

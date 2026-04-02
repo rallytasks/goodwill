@@ -1,0 +1,347 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f5;
+    color: #333;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 40px 24px;
+}
+
+/* Logo & Header */
+.logo-section {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.logo {
+    margin-bottom: 16px;
+}
+
+h1 {
+    font-size: 24px;
+    color: #004B87;
+    margin-bottom: 4px;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 15px;
+}
+
+/* Steps */
+.step {
+    display: none;
+}
+
+.step.active {
+    display: block;
+}
+
+/* Form Elements */
+label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 8px;
+}
+
+input[type="tel"],
+input[type="text"],
+input[type="email"],
+input[type="date"],
+textarea,
+select {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 18px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    background: white;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #004B87;
+}
+
+textarea {
+    font-size: 16px;
+    resize: vertical;
+    min-height: 100px;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: background 0.2s, transform 0.1s;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#btn-send,
+#btn-verify,
+.btn-primary {
+    background: #004B87;
+    color: white;
+}
+
+#btn-send:hover:not(:disabled),
+#btn-verify:hover:not(:disabled),
+.btn-primary:hover:not(:disabled) {
+    background: #003a6b;
+}
+
+.link-btn {
+    background: none;
+    color: #004B87;
+    text-decoration: underline;
+    font-weight: 400;
+    font-size: 14px;
+    padding: 8px;
+}
+
+.btn-secondary {
+    background: #e8e8e8;
+    color: #333;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #ddd;
+}
+
+.btn-danger {
+    background: none;
+    color: #999;
+    font-size: 14px;
+    margin-top: 24px;
+}
+
+/* Info & Error text */
+.info {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.error {
+    color: #d32f2f;
+    font-size: 13px;
+    margin-top: 8px;
+    min-height: 20px;
+}
+
+.footer-text {
+    text-align: center;
+    color: #999;
+    font-size: 12px;
+    margin-top: 32px;
+}
+
+/* Dashboard */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.header h1 {
+    font-size: 20px;
+}
+
+.header button {
+    width: auto;
+    padding: 8px 16px;
+    font-size: 13px;
+    margin: 0;
+}
+
+.profile-banner {
+    background: #004B87;
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.profile-banner h2 {
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.profile-banner p {
+    opacity: 0.8;
+    font-size: 14px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #004B87;
+    margin-bottom: 12px;
+}
+
+/* Form group */
+.form-group {
+    margin-bottom: 16px;
+}
+
+/* Cards */
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.card .receipt-num {
+    font-weight: 700;
+    color: #004B87;
+    font-size: 14px;
+}
+
+.card .date {
+    color: #888;
+    font-size: 13px;
+}
+
+.card .items {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #555;
+}
+
+.card .location {
+    font-size: 13px;
+    color: #888;
+    margin-top: 4px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: #999;
+}
+
+/* Receipt View */
+.receipt {
+    background: white;
+    border: 2px solid #004B87;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+}
+
+.receipt h2 {
+    text-align: center;
+    color: #004B87;
+    margin-bottom: 4px;
+}
+
+.receipt .charity-info {
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed #ddd;
+}
+
+.receipt .field {
+    margin-bottom: 12px;
+}
+
+.receipt .field-label {
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.receipt .field-value {
+    font-size: 15px;
+    color: #333;
+}
+
+.receipt .legal {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed #ddd;
+    font-size: 12px;
+    color: #888;
+    font-style: italic;
+    text-align: center;
+}
+
+/* Modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 400px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal h2 {
+    color: #004B87;
+    margin-bottom: 16px;
+    font-size: 18px;
+}
+
+/* Print styles */
+@media print {
+    body { background: white; }
+    .container { padding: 0; }
+    .header, .btn-primary, .btn-secondary, .btn-danger, .modal-overlay { display: none; }
+    .receipt { border: 1px solid #333; }
+}

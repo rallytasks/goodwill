@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goodwill Donation Receipt</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="logo-section">
+            <div class="logo">
+                <svg viewBox="0 0 100 100" width="80" height="80">
+                    <circle cx="50" cy="50" r="48" fill="#004B87" />
+                    <text x="50" y="42" text-anchor="middle" fill="white" font-size="14" font-weight="bold" font-family="Arial">good</text>
+                    <text x="50" y="60" text-anchor="middle" fill="white" font-size="14" font-weight="bold" font-family="Arial">will</text>
+                    <path d="M 30 68 Q 50 80 70 68" stroke="white" stroke-width="3" fill="none"/>
+                </svg>
+            </div>
+            <h1>Donation Receipt</h1>
+            <p class="subtitle">Get your tax receipt in seconds</p>
+        </div>
+
+        <!-- Step 1: Phone Entry -->
+        <div id="step-phone" class="step active">
+            <label for="phone">Enter your cell phone number</label>
+            <input type="tel" id="phone" placeholder="(555) 123-4567" autocomplete="tel" inputmode="tel">
+            <button id="btn-send" onclick="sendCode()">Send Verification Code</button>
+            <p id="phone-error" class="error"></p>
+        </div>
+
+        <!-- Step 2: Code Verification -->
+        <div id="step-code" class="step">
+            <p class="info">We sent a code to <span id="display-phone"></span></p>
+            <label for="code">Enter verification code</label>
+            <input type="text" id="code" placeholder="123456" autocomplete="one-time-code" inputmode="numeric" maxlength="6">
+            <button id="btn-verify" onclick="verifyCode()">Verify</button>
+            <button class="link-btn" onclick="goBack()">Use a different number</button>
+            <p id="code-error" class="error"></p>
+        </div>
+
+        <p class="footer-text">Your information is kept private and secure.</p>
+    </div>
+
+    <script>
+        let currentPhone = '';
+
+        function formatPhone(input) {
+            const digits = input.replace(/\D/g, '');
+            if (digits.length <= 3) return digits;
+            if (digits.length <= 6) return `(${digits.slice(0,3)}) ${digits.slice(3)}`;
+            return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6,10)}`;
+        }
+
+        document.getElementById('phone').addEventListener('input', function(e) {
+            const pos = e.target.selectionStart;
+            const prev = e.target.value;
+            e.target.value = formatPhone(e.target.value);
+        });
+
+        document.getElementById('phone').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') sendCode();
+        });
+
+        document.getElementById('code').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') verifyCode();
+        });
+
+        async function sendCode() {
+            const phoneInput = document.getElementById('phone').value;
+            const digits = phoneInput.replace(/\D/g, '');
+            if (digits.length !== 10) {
+                showError('phone-error', 'Please enter a 10-digit phone number');
+                return;
+            }
+
+            currentPhone = '+1' + digits;
+            const btn = document.getElementById('btn-send');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            clearError('phone-error');
+
+            try {
+                const resp = await fetch('/api/auth/send-code', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({phone: currentPhone})
+                });
+                const data = await resp.json();
+
+                if (!resp.ok) {
+                    showError('phone-error', data.error || 'Failed to send code');
+                    btn.disabled = false;
+                    btn.textContent = 'Send Verification Code';
+                    return;
+                }
+
+                document.getElementById('display-phone').textContent = phoneInput;
+                showStep('step-code');
+                document.getElementById('code').focus();
+            } catch (err) {
+                showError('phone-error', 'Network error. Please try again.');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Send Verification Code';
+        }
+
+        async function verifyCode() {
+            const code = document.getElementById('code').value.trim();
+            if (code.length < 4) {
+                showError('code-error', 'Please enter the code from your text message');
+                return;
+            }
+
+            const btn = document.getElementById('btn-verify');
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
+            clearError('code-error');
+
+            try {
+                const resp = await fetch('/api/auth/verify-code', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({phone: currentPhone, code: code})
+                });
+                const data = await resp.json();
+
+                if (!resp.ok) {
+                    showError('code-error', data.error || 'Verification failed');
+                    btn.disabled = false;
+                    btn.textContent = 'Verify';
+                    return;
+                }
+
+                window.location.href = '/dashboard';
+            } catch (err) {
+                showError('code-error', 'Network error. Please try again.');
+                btn.disabled = false;
+                btn.textContent = 'Verify';
+            }
+        }
+
+        function goBack() {
+            showStep('step-phone');
+            document.getElementById('code').value = '';
+            clearError('code-error');
+        }
+
+        function showStep(stepId) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById(stepId).classList.add('active');
+        }
+
+        function showError(id, msg) {
+            document.getElementById(id).textContent = msg;
+        }
+
+        function clearError(id) {
+            document.getElementById(id).textContent = '';
+        }
+    </script>
+</body>
+</html>
