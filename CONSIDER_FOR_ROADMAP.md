@@ -26,3 +26,7 @@ _Submitted: 2026-04-02 17:35 UTC_
 ## [NORMAL] 2026-04-02 17:35 UTC
 add a user profile page where the user can view and update their information. remove the name and cell tile
 _Submitted: 2026-04-02 17:35 UTC_
+
+## [NORMAL] 2026-04-02 17:39 UTC
+find the goodwill colorado logo and use that on the login and enter code pages and in the upper left of the home page
+_Submitted: 2026-04-02 17:39 UTC_
