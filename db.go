@@ -44,6 +44,16 @@ func initDB(path string) *sql.DB {
 		`CREATE INDEX IF NOT EXISTS idx_donations_donor ON donations(donor_id)`,
 		// Add zip_code column to donors (safe to re-run: ALTER will fail silently if exists)
 		`ALTER TABLE donors ADD COLUMN zip_code TEXT DEFAULT ''`,
+		`ALTER TABLE donors ADD COLUMN login_count INTEGER DEFAULT 0`,
+		`CREATE TABLE IF NOT EXISTS nps_responses (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			donor_id INTEGER NOT NULL,
+			score INTEGER NOT NULL,
+			comment TEXT DEFAULT '',
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (donor_id) REFERENCES donors(id)
+		)`,
+		`CREATE INDEX IF NOT EXISTS idx_nps_donor ON nps_responses(donor_id)`,
 		`CREATE TABLE IF NOT EXISTS feedback_requests (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			donor_id INTEGER NOT NULL,

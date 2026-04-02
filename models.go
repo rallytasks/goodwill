@@ -3,12 +3,13 @@ package main
 import "time"
 
 type Donor struct {
-	ID        int64     `json:"id"`
-	Phone     string    `json:"phone"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	ZipCode   string    `json:"zip_code"`
-	CreatedAt time.Time `json:"created_at"`
+	ID         int64     `json:"id"`
+	Phone      string    `json:"phone"`
+	Name       string    `json:"name"`
+	Email      string    `json:"email"`
+	ZipCode    string    `json:"zip_code"`
+	LoginCount int       `json:"login_count"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 type Donation struct {

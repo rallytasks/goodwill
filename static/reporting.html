@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporting - Goodwill</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .hamburger { background: none; border: none; cursor: pointer; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+        .hamburger span { display: block; width: 20px; height: 2px; background: #004B87; border-radius: 1px; }
+        .nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; }
+        .nav-overlay.open { display: block; }
+        .nav-drawer { position: fixed; top: 0; right: -280px; width: 280px; height: 100%; background: #fff; z-index: 201; transition: right 0.25s ease; box-shadow: -4px 0 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .nav-drawer.open { right: 0; }
+        .nav-header { padding: 20px 20px 16px; border-bottom: 1px solid #e5e7eb; }
+        .nav-header h2 { font-size: 16px; color: #004B87; margin: 0; }
+        .nav-items { flex: 1; padding: 8px 0; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; color: #333; text-decoration: none; font-size: 15px; font-weight: 500; cursor: pointer; border: none; background: none; width: 100%; text-align: left; }
+        .nav-item:hover { background: #f3f4f6; }
+        .nav-item svg { width: 20px; height: 20px; color: #666; flex-shrink: 0; }
+        .nav-divider { height: 1px; background: #e5e7eb; margin: 4px 20px; }
+
+        .nps-gauge { text-align: center; padding: 32px 16px; background: white; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .nps-number { font-size: 64px; font-weight: 700; line-height: 1; }
+        .nps-number.positive { color: #059669; }
+        .nps-number.neutral { color: #f59e0b; }
+        .nps-number.negative { color: #dc2626; }
+        .nps-label { font-size: 14px; color: #888; margin-top: 4px; }
+        .nps-breakdown { display: flex; gap: 12px; margin-top: 16px; justify-content: center; }
+        .nps-segment { text-align: center; flex: 1; max-width: 100px; }
+        .nps-segment-count { font-size: 24px; font-weight: 700; }
+        .nps-segment-label { font-size: 11px; color: #888; margin-top: 2px; }
+        .promoter-color { color: #059669; }
+        .passive-color { color: #f59e0b; }
+        .detractor-color { color: #dc2626; }
+
+        .comment-feed { margin-top: 20px; }
+        .comment-card { background: white; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .comment-score { display: inline-block; width: 28px; height: 28px; border-radius: 50%; font-size: 13px; font-weight: 700; color: #fff; text-align: center; line-height: 28px; margin-right: 10px; vertical-align: middle; }
+        .comment-text { font-size: 14px; color: #374151; line-height: 1.5; margin-top: 8px; }
+        .comment-date { font-size: 11px; color: #9ca3af; margin-top: 6px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Reporting</h1>
+            <button class="hamburger" onclick="toggleNav()" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+
+        <div id="loading" class="empty-state">Loading...</div>
+
+        <div id="report-content" style="display:none;">
+            <div class="nps-gauge">
+                <div class="nps-number" id="nps-score">--</div>
+                <div class="nps-label">Net Promoter Score</div>
+                <div id="nps-total" style="font-size:12px;color:#9ca3af;margin-top:4px;"></div>
+                <div class="nps-breakdown">
+                    <div class="nps-segment">
+                        <div class="nps-segment-count promoter-color" id="nps-promoters">0</div>
+                        <div class="nps-segment-label">Promoters</div>
+                    </div>
+                    <div class="nps-segment">
+                        <div class="nps-segment-count passive-color" id="nps-passives">0</div>
+                        <div class="nps-segment-label">Passives</div>
+                    </div>
+                    <div class="nps-segment">
+                        <div class="nps-segment-count detractor-color" id="nps-detractors">0</div>
+                        <div class="nps-segment-label">Detractors</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-title">Comments</h3>
+            <div id="comments-feed" class="comment-feed"></div>
+        </div>
+    </div>
+
+    <!-- Nav Drawer -->
+    <div id="nav-overlay" class="nav-overlay" onclick="toggleNav()"></div>
+    <div id="nav-drawer" class="nav-drawer">
+        <div class="nav-header"><h2>Menu</h2></div>
+        <div class="nav-items">
+            <a href="/dashboard" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H2v7h7V5z"/><path d="M22 5h-7v7h7V5z"/><path d="M9 16H2v3h7v-3z"/><path d="M22 14h-7v5h7v-5z"/></svg>
+                Receipts
+            </a>
+            <a href="/reporting" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+                Reporting
+            </a>
+            <div class="nav-divider"></div>
+            <button class="nav-item" onclick="logout()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Sign Out
+            </button>
+        </div>
+    </div>
+
+    <script src="/static/feedback-widget.js"></script>
+    <script>
+        function toggleNav() {
+            document.getElementById('nav-overlay').classList.toggle('open');
+            document.getElementById('nav-drawer').classList.toggle('open');
+        }
+
+        async function logout() {
+            await fetch('/api/auth/logout', {method: 'POST'});
+            window.location.href = '/';
+        }
+
+        async function loadReport() {
+            try {
+                const resp = await fetch('/api/nps/report');
+                if (resp.status === 403) {
+                    document.getElementById('loading').textContent = 'Access denied.';
+                    return;
+                }
+                if (!resp.ok) {
+                    document.getElementById('loading').textContent = 'Failed to load report.';
+                    return;
+                }
+
+                const data = await resp.json();
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('report-content').style.display = 'block';
+
+                const score = Math.round(data.nps_score);
+                const scoreEl = document.getElementById('nps-score');
+                scoreEl.textContent = data.total_responses > 0 ? score : '--';
+                scoreEl.className = 'nps-number ' + (score >= 50 ? 'positive' : score >= 0 ? 'neutral' : 'negative');
+
+                document.getElementById('nps-total').textContent = data.total_responses + ' response' + (data.total_responses !== 1 ? 's' : '');
+                document.getElementById('nps-promoters').textContent = data.promoters;
+                document.getElementById('nps-passives').textContent = data.passives;
+                document.getElementById('nps-detractors').textContent = data.detractors;
+
+                const feed = document.getElementById('comments-feed');
+                if (!data.comments || data.comments.length === 0) {
+                    feed.innerHTML = '<div class="empty-state">No comments yet.</div>';
+                } else {
+                    feed.innerHTML = data.comments.map(c => {
+                        const bg = c.score >= 9 ? '#059669' : c.score >= 7 ? '#f59e0b' : '#dc2626';
+                        let dateStr = '';
+                        try {
+                            const d = new Date(c.created_at.includes('Z') ? c.created_at : c.created_at + 'Z');
+                            dateStr = d.toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+                        } catch(e) { dateStr = c.created_at; }
+                        return `
+                            <div class="comment-card">
+                                <span class="comment-score" style="background:${bg}">${c.score}</span>
+                                <div class="comment-text">${escapeHtml(c.comment)}</div>
+                                <div class="comment-date">${dateStr}</div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (err) {
+                document.getElementById('loading').textContent = 'Failed to load report.';
+            }
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        loadReport();
+    </script>
+</body>
+</html>

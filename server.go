@@ -39,8 +39,16 @@ func (s *server) routes() {
 	s.mux.HandleFunc("/api/donations/create", s.handleCreateDonation)
 	s.mux.HandleFunc("/api/receipt/", s.handleReceipt)
 
+	// NPS API
+	s.mux.HandleFunc("/api/nps/check", s.handleNPSCheck)
+	s.mux.HandleFunc("/api/nps/submit", s.handleNPSSubmit)
+	s.mux.HandleFunc("/api/nps/report", s.handleNPSReport)
+
 	// Feedback API
 	s.mux.HandleFunc("/api/feedback", s.handleFeedback)
+
+	// Reporting page
+	s.mux.HandleFunc("/reporting", s.handleReporting)
 
 	// Health check
 	s.mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

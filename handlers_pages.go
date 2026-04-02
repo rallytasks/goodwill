@@ -29,3 +29,13 @@ func (s *server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 
 	http.ServeFile(w, r, "static/dashboard.html")
 }
+
+func (s *server) handleReporting(w http.ResponseWriter, r *http.Request) {
+	donor, _ := s.authenticatedDonor(r)
+	if donor == nil {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+
+	http.ServeFile(w, r, "static/reporting.html")
+}

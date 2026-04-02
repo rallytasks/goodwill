@@ -179,6 +179,9 @@ func (s *server) handleVerifyCode(w http.ResponseWriter, r *http.Request) {
 		donorID, _ = result.LastInsertId()
 	}
 
+	// Increment login count
+	s.db.Exec("UPDATE donors SET login_count = COALESCE(login_count, 0) + 1 WHERE id = ?", donorID)
+
 	// Create session
 	token, err := s.createSession(donorID)
 	if err != nil {
