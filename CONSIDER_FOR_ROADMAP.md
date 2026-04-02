@@ -18,3 +18,7 @@ _Submitted: 2026-04-02 17:30 UTC_
 ## [NORMAL] 2026-04-02 17:34 UTC
 instead of a big free text field for items donated, give me dropdown to select the item type (examples: clothing, linens, shoes, housewares, electronics, furniture) and a value that the user can hand-type. make sure there's an "other" option for the category. Add a disclaimer that any dollar values are self-reported by the donor and Goodwill does not validate it in simple, clear, friendly unambiguous english but not pominent because it's small print. Display the goodwill EIN.. Add a total line to make it easier for the donor to report the amount to their accountant or otherwise for their taxes
 _Submitted: 2026-04-02 17:34 UTC_
+
+## [NORMAL] 2026-04-02 17:35 UTC
+Add reporting by zip code and a way to download the reporting to a csv or excel
+_Submitted: 2026-04-02 17:35 UTC_
