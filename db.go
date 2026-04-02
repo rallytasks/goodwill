@@ -41,6 +41,18 @@ func initDB(path string) *sql.DB {
 		`CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token)`,
 		`CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at)`,
 		`CREATE INDEX IF NOT EXISTS idx_donations_donor ON donations(donor_id)`,
+		`CREATE TABLE IF NOT EXISTS feedback_requests (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			donor_id INTEGER NOT NULL,
+			body TEXT NOT NULL,
+			type TEXT NOT NULL DEFAULT 'feature',
+			urgency TEXT NOT NULL DEFAULT 'normal',
+			status TEXT NOT NULL DEFAULT 'new',
+			admin_notes TEXT DEFAULT '',
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME,
+			FOREIGN KEY (donor_id) REFERENCES donors(id)
+		)`,
 	}
 
 	for _, m := range migrations {

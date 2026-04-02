@@ -39,6 +39,9 @@ func (s *server) routes() {
 	s.mux.HandleFunc("/api/donations/create", s.handleCreateDonation)
 	s.mux.HandleFunc("/api/receipt/", s.handleReceipt)
 
+	// Feedback API
+	s.mux.HandleFunc("/api/feedback", s.handleFeedback)
+
 	// Health check
 	s.mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
