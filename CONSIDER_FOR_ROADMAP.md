@@ -22,3 +22,7 @@ _Submitted: 2026-04-02 17:34 UTC_
 ## [NORMAL] 2026-04-02 17:35 UTC
 Add reporting by zip code and a way to download the reporting to a csv or excel
 _Submitted: 2026-04-02 17:35 UTC_
+
+## [NORMAL] 2026-04-02 17:35 UTC
+add a user profile page where the user can view and update their information. remove the name and cell tile
+_Submitted: 2026-04-02 17:35 UTC_
