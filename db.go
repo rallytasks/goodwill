@@ -49,6 +49,7 @@ func initDB(path string) *sql.DB {
 			urgency TEXT NOT NULL DEFAULT 'normal',
 			status TEXT NOT NULL DEFAULT 'new',
 			admin_notes TEXT DEFAULT '',
+			github_issue_url TEXT DEFAULT '',
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			updated_at DATETIME,
 			FOREIGN KEY (donor_id) REFERENCES donors(id)
