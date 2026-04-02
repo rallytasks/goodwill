@@ -56,11 +56,11 @@ func (s *server) authenticatedDonor(r *http.Request) (*Donor, error) {
 
 	var donor Donor
 	err = s.db.QueryRow(`
-		SELECT d.id, d.phone, d.name, d.email, d.created_at
+		SELECT d.id, d.phone, d.name, d.email, COALESCE(d.zip_code, ''), d.created_at
 		FROM donors d
 		JOIN sessions s ON s.donor_id = d.id
 		WHERE s.token = ? AND s.expires_at > ?
-	`, cookie.Value, time.Now()).Scan(&donor.ID, &donor.Phone, &donor.Name, &donor.Email, &donor.CreatedAt)
+	`, cookie.Value, time.Now()).Scan(&donor.ID, &donor.Phone, &donor.Name, &donor.Email, &donor.ZipCode, &donor.CreatedAt)
 
 	if err == sql.ErrNoRows {
 		return nil, nil

@@ -385,7 +385,17 @@
         .then(function (r) { return r.json(); })
         .then(function (data) {
           if (data.success) {
-            showSuccess(modal, data.id, data.message);
+            // Keep modal open, reset form, show inline confirmation
+            textarea.value = '';
+            sendBtn.disabled = false;
+            sendBtn.textContent = 'Send';
+            hint.textContent = '\u2713 Sent! Enter another or close.';
+            hint.style.color = '#059669';
+            setTimeout(function () {
+              hint.textContent = 'Enter to send \u00B7 Shift+Enter for new line';
+              hint.style.color = '';
+            }, 3000);
+            textarea.focus();
           } else {
             sendBtn.disabled = false;
             sendBtn.textContent = 'Send';

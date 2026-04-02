@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"log"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -41,6 +42,8 @@ func initDB(path string) *sql.DB {
 		`CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token)`,
 		`CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at)`,
 		`CREATE INDEX IF NOT EXISTS idx_donations_donor ON donations(donor_id)`,
+		// Add zip_code column to donors (safe to re-run: ALTER will fail silently if exists)
+		`ALTER TABLE donors ADD COLUMN zip_code TEXT DEFAULT ''`,
 		`CREATE TABLE IF NOT EXISTS feedback_requests (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			donor_id INTEGER NOT NULL,
@@ -58,7 +61,10 @@ func initDB(path string) *sql.DB {
 
 	for _, m := range migrations {
 		if _, err := db.Exec(m); err != nil {
-			log.Fatalf("migration failed: %v\nSQL: %s", err, m)
+			// ALTER TABLE ADD COLUMN fails if column already exists — that's fine
+			if !strings.Contains(err.Error(), "duplicate column") {
+				log.Fatalf("migration failed: %v\nSQL: %s", err, m)
+			}
 		}
 	}
 

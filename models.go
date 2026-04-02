@@ -7,6 +7,7 @@ type Donor struct {
 	Phone     string    `json:"phone"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
+	ZipCode   string    `json:"zip_code"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
