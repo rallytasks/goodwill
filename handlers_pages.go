@@ -39,3 +39,13 @@ func (s *server) handleReporting(w http.ResponseWriter, r *http.Request) {
 
 	http.ServeFile(w, r, "static/reporting.html")
 }
+
+func (s *server) handleProfilePage(w http.ResponseWriter, r *http.Request) {
+	donor, _ := s.authenticatedDonor(r)
+	if donor == nil {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+
+	http.ServeFile(w, r, "static/profile.html")
+}

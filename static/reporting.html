@@ -73,7 +73,13 @@
                 </div>
             </div>
 
-            <h3 class="section-title">Comments</h3>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px;">
+                <h3 class="section-title" style="margin:0;">Donors by Zip Code</h3>
+                <a href="/api/report/csv" class="btn-secondary" style="display:inline-block;padding:6px 14px;font-size:12px;text-decoration:none;border-radius:8px;margin:0;width:auto;">Download CSV</a>
+            </div>
+            <div id="zip-report" style="margin-top:12px;"></div>
+
+            <h3 class="section-title" style="margin-top:24px;">NPS Comments</h3>
             <div id="comments-feed" class="comment-feed"></div>
         </div>
     </div>
@@ -86,6 +92,10 @@
             <a href="/dashboard" class="nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H2v7h7V5z"/><path d="M22 5h-7v7h7V5z"/><path d="M9 16H2v3h7v-3z"/><path d="M22 14h-7v5h7v-5z"/></svg>
                 Receipts
+            </a>
+            <a href="/profile" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Profile
             </a>
             <a href="/reporting" class="nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
@@ -168,7 +178,36 @@
             return div.innerHTML;
         }
 
+        async function loadZipReport() {
+            try {
+                const resp = await fetch('/api/report/donors');
+                if (!resp.ok) return;
+                const data = await resp.json();
+                const container = document.getElementById('zip-report');
+
+                if (!data.by_zip || data.by_zip.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No donor data yet.</div>';
+                    return;
+                }
+
+                let html = `<div style="font-size:13px;color:#888;margin-bottom:12px;">${data.total_donors} total donors &middot; ${data.total_donations} total donations</div>`;
+                html += data.by_zip.map(z => `
+                    <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;">
+                        <div>
+                            <div style="font-weight:600;color:#004B87;font-size:15px;">${escapeHtml(z.zip_code)}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:14px;font-weight:600;">${z.donor_count} donor${z.donor_count !== 1 ? 's' : ''}</div>
+                            <div style="font-size:12px;color:#888;">${z.donations} donation${z.donations !== 1 ? 's' : ''}</div>
+                        </div>
+                    </div>
+                `).join('');
+                container.innerHTML = html;
+            } catch (e) {}
+        }
+
         loadReport();
+        loadZipReport();
     </script>
 </body>
 </html>

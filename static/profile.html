@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Goodwill</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .hamburger { background: none; border: none; cursor: pointer; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+        .hamburger span { display: block; width: 20px; height: 2px; background: #004B87; border-radius: 1px; }
+        .nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; }
+        .nav-overlay.open { display: block; }
+        .nav-drawer { position: fixed; top: 0; right: -280px; width: 280px; height: 100%; background: #fff; z-index: 201; transition: right 0.25s ease; box-shadow: -4px 0 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .nav-drawer.open { right: 0; }
+        .nav-header { padding: 20px 20px 16px; border-bottom: 1px solid #e5e7eb; }
+        .nav-header h2 { font-size: 16px; color: #004B87; margin: 0; }
+        .nav-items { flex: 1; padding: 8px 0; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; color: #333; text-decoration: none; font-size: 15px; font-weight: 500; cursor: pointer; border: none; background: none; width: 100%; text-align: left; }
+        .nav-item:hover { background: #f3f4f6; }
+        .nav-item svg { width: 20px; height: 20px; color: #666; flex-shrink: 0; }
+        .nav-divider { height: 1px; background: #e5e7eb; margin: 4px 20px; }
+        .profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: #004B87; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; margin: 0 auto 16px; }
+        .save-success { color: #059669; font-size: 13px; margin-top: 8px; display: none; }
+        .save-success.show { display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Profile</h1>
+            <button class="hamburger" onclick="toggleNav()" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+
+        <div id="loading" class="empty-state">Loading...</div>
+
+        <div id="profile-content" style="display:none;">
+            <div style="text-align:center;margin-bottom:24px;">
+                <div class="profile-avatar" id="avatar"></div>
+            </div>
+
+            <div class="card" style="padding:20px;">
+                <div class="form-group">
+                    <label for="p-name">Full Name</label>
+                    <input type="text" id="p-name" placeholder="Jane Smith">
+                </div>
+                <div class="form-group">
+                    <label for="p-email">Email</label>
+                    <input type="email" id="p-email" placeholder="jane@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="p-zip">Zip Code</label>
+                    <input type="text" id="p-zip" placeholder="80202" inputmode="numeric" maxlength="10">
+                </div>
+                <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+                <p id="profile-error" class="error"></p>
+                <p id="profile-success" class="save-success">Profile updated!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nav Drawer -->
+    <div id="nav-overlay" class="nav-overlay" onclick="toggleNav()"></div>
+    <div id="nav-drawer" class="nav-drawer">
+        <div class="nav-header"><h2>Menu</h2></div>
+        <div class="nav-items">
+            <a href="/dashboard" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H2v7h7V5z"/><path d="M22 5h-7v7h7V5z"/><path d="M9 16H2v3h7v-3z"/><path d="M22 14h-7v5h7v-5z"/></svg>
+                Receipts
+            </a>
+            <a href="/profile" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Profile
+            </a>
+            <div id="nav-reporting" style="display:none;">
+                <a href="/reporting" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+                    Reporting
+                </a>
+            </div>
+            <div class="nav-divider"></div>
+            <button class="nav-item" onclick="logout()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Sign Out
+            </button>
+        </div>
+    </div>
+
+    <script src="/static/feedback-widget.js"></script>
+    <script>
+        function toggleNav() {
+            document.getElementById('nav-overlay').classList.toggle('open');
+            document.getElementById('nav-drawer').classList.toggle('open');
+        }
+
+        async function logout() {
+            await fetch('/api/auth/logout', {method: 'POST'});
+            window.location.href = '/';
+        }
+
+        async function init() {
+            try {
+                const resp = await fetch('/api/donor/profile');
+                if (!resp.ok) { window.location.href = '/'; return; }
+                const profile = await resp.json();
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('profile-content').style.display = 'block';
+
+                document.getElementById('p-name').value = profile.name || '';
+                document.getElementById('p-email').value = profile.email || '';
+                document.getElementById('p-zip').value = profile.zip_code || '';
+
+                // Avatar initials
+                const initials = (profile.name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+                document.getElementById('avatar').textContent = initials;
+
+                if (profile.can_submit_feedback) {
+                    document.getElementById('nav-reporting').style.display = 'block';
+                }
+            } catch (err) { window.location.href = '/'; }
+        }
+
+        async function saveProfile() {
+            const name = document.getElementById('p-name').value.trim();
+            const email = document.getElementById('p-email').value.trim();
+            const zip_code = document.getElementById('p-zip').value.trim();
+
+            document.getElementById('profile-error').textContent = '';
+            document.getElementById('profile-success').classList.remove('show');
+
+            if (!name) { document.getElementById('profile-error').textContent = 'Name is required'; return; }
+            if (!email) { document.getElementById('profile-error').textContent = 'Email is required'; return; }
+            if (!zip_code) { document.getElementById('profile-error').textContent = 'Zip code is required'; return; }
+
+            const resp = await fetch('/api/donor/update-profile', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name, email, zip_code})
+            });
+
+            if (!resp.ok) {
+                const data = await resp.json().catch(() => ({}));
+                document.getElementById('profile-error').textContent = data.error || 'Failed to save.';
+                return;
+            }
+
+            // Update avatar
+            const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+            document.getElementById('avatar').textContent = initials;
+
+            document.getElementById('profile-success').classList.add('show');
+            setTimeout(() => document.getElementById('profile-success').classList.remove('show'), 3000);
+        }
+
+        init();
+    </script>
+</body>
+</html>

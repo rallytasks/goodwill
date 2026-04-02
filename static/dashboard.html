@@ -66,8 +66,8 @@
             </button>
         </div>
 
-        <div id="profile-banner" class="profile-banner">
-            <h2 id="donor-name">Thank you for your donation</h2>
+        <div id="profile-banner" class="profile-banner" style="margin-bottom:16px;">
+            <h2>Thank you for your donation</h2>
         </div>
 
         <!-- Profile Setup -->
@@ -110,6 +110,10 @@
             <a href="/dashboard" class="nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H2v7h7V5z"/><path d="M22 5h-7v7h7V5z"/><path d="M9 16H2v3h7v-3z"/><path d="M22 14h-7v5h7v-5z"/></svg>
                 Receipts
+            </a>
+            <a href="/profile" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Profile
             </a>
             <div id="nav-reporting" style="display:none;">
                 <a href="/reporting" class="nav-item">
@@ -202,14 +206,12 @@
                 donorProfile = await resp.json();
 
                 if (!donorProfile.name || !donorProfile.email || !donorProfile.zip_code) {
-                    document.getElementById('donor-name').textContent = 'Welcome!';
                     document.getElementById('profile-setup').style.display = 'block';
                     document.getElementById('btn-new-donation').style.display = 'none';
                     if (donorProfile.name) document.getElementById('setup-name').value = donorProfile.name;
                     if (donorProfile.email) document.getElementById('setup-email').value = donorProfile.email;
                     if (donorProfile.zip_code) document.getElementById('setup-zip').value = donorProfile.zip_code;
                 } else {
-                    document.getElementById('donor-name').textContent = 'Thank you for your donation';
                     document.getElementById('profile-setup').style.display = 'none';
                     document.getElementById('btn-new-donation').style.display = 'block';
                 }
@@ -296,7 +298,6 @@
             }
             donorProfile.name = name;
             donorProfile.email = email;
-            document.getElementById('donor-name').textContent = 'Thank you for your donation';
             document.getElementById('profile-setup').style.display = 'none';
             document.getElementById('btn-new-donation').style.display = 'block';
         }

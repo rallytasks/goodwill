@@ -47,8 +47,11 @@ func (s *server) routes() {
 	// Feedback API
 	s.mux.HandleFunc("/api/feedback", s.handleFeedback)
 
-	// Reporting page
+	// Reporting API + pages
+	s.mux.HandleFunc("/api/report/donors", s.handleDonorReport)
+	s.mux.HandleFunc("/api/report/csv", s.handleReportCSV)
 	s.mux.HandleFunc("/reporting", s.handleReporting)
+	s.mux.HandleFunc("/profile", s.handleProfilePage)
 
 	// Health check
 	s.mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
