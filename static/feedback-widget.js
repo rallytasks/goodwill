@@ -13,7 +13,7 @@
     fetch('/api/donor/profile', { credentials: 'same-origin' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (data) {
-        if (data && data.can_submit_feedback && !canSubmit) {
+        if (data && !canSubmit) {
           canSubmit = true;
           init();
         }

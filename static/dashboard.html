@@ -8,11 +8,12 @@
     <style>
         /* Line items */
         .line-item { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
-        .line-item select { flex: 1; padding: 10px; font-size: 14px; border: 2px solid #ddd; border-radius: 10px; background: #fff; outline: none; }
+        .line-item select { flex: 1; padding: 10px 12px; font-size: 14px; border: 2px solid #ddd; border-radius: 10px; background: #fff; outline: none; -webkit-appearance: menulist; appearance: menulist; color: #333; min-width: 0; }
         .line-item select:focus { border-color: #004B87; }
-        .line-item input[type="text"] { width: 90px; padding: 10px; font-size: 14px; border: 2px solid #ddd; border-radius: 10px; outline: none; text-align: right; }
-        .line-item input[type="text"]:focus { border-color: #004B87; }
-        .line-item .remove-item { background: none; border: none; color: #ccc; font-size: 20px; cursor: pointer; padding: 0 4px; line-height: 1; }
+        .line-item select option[value=""] { color: #999; }
+        .line-item .value-input { width: 100px; padding: 10px 8px; font-size: 14px; border: 2px solid #ddd; border-radius: 10px; outline: none; text-align: right; flex-shrink: 0; }
+        .line-item .value-input:focus { border-color: #004B87; }
+        .line-item .remove-item { background: none; border: none; color: #ccc; font-size: 20px; cursor: pointer; padding: 4px 6px; line-height: 1; flex-shrink: 0; }
         .line-item .remove-item:hover { color: #d32f2f; }
 
         /* Hamburger menu */
@@ -331,12 +332,13 @@
             row.className = 'line-item';
 
             const select = document.createElement('select');
-            select.innerHTML = '<option value="">Select category...</option>' +
+            select.innerHTML = '<option value="" disabled selected>Select category</option>' +
                 CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
 
             const valInput = document.createElement('input');
             valInput.type = 'text';
-            valInput.placeholder = '$0.00';
+            valInput.className = 'value-input';
+            valInput.placeholder = '$ Value';
             valInput.inputMode = 'decimal';
             valInput.addEventListener('input', updateTotal);
 
@@ -421,15 +423,37 @@
             if (!resp.ok) return;
             const data = await resp.json();
             const r = data.receipt;
+            // Format items as a table with totals
+            const lines = r.items_description.split('\n').filter(l => l.trim());
+            let itemsHtml = '';
+            let totalLine = '';
+            lines.forEach(line => {
+                if (line.startsWith('Estimated Total:')) {
+                    totalLine = line;
+                } else if (line.trim()) {
+                    const parts = line.split(': $');
+                    if (parts.length === 2) {
+                        itemsHtml += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f0f0;"><span>${escapeHtml(parts[0])}</span><span>$${escapeHtml(parts[1])}</span></div>`;
+                    } else {
+                        itemsHtml += `<div style="padding:4px 0;border-bottom:1px solid #f0f0f0;">${escapeHtml(line)}</div>`;
+                    }
+                }
+            });
+            if (totalLine) {
+                const totalVal = totalLine.split('$')[1] || '0.00';
+                itemsHtml += `<div style="display:flex;justify-content:space-between;padding:8px 0 0;font-weight:700;font-size:16px;border-top:2px solid #004B87;margin-top:4px;"><span>Total</span><span>$${escapeHtml(totalVal)}</span></div>`;
+            }
+
             document.getElementById('receipt-content').innerHTML = `
-                <h2>Donation Receipt</h2>
+                <div style="text-align:center;margin-bottom:12px;"><img src="/static/goodwill-logo.jpg" alt="Goodwill of Colorado" style="max-width:180px;height:auto;"></div>
+                <h2 style="margin-bottom:4px;">Donation Receipt</h2>
                 <div class="charity-info"><strong>${data.charity}</strong><br>EIN: ${data.ein}</div>
                 <div class="field"><div class="field-label">Receipt Number</div><div class="field-value">${r.receipt_number}</div></div>
                 <div class="field"><div class="field-label">Donor</div><div class="field-value">${escapeHtml(data.donor_name)}</div></div>
                 <div class="field"><div class="field-label">Date of Donation</div><div class="field-value">${formatDate(r.donation_date)}</div></div>
                 ${r.location ? `<div class="field"><div class="field-label">Location</div><div class="field-value">${escapeHtml(r.location)}</div></div>` : ''}
-                <div class="field"><div class="field-label">Items Donated</div><div class="field-value">${escapeHtml(r.items_description)}</div></div>
-                <div class="legal">${data.statement}</div>
+                <div class="field"><div class="field-label">Items Donated</div><div style="margin-top:4px;">${itemsHtml}</div></div>
+                <div class="legal">${data.statement}<br>Goodwill does not substantiate nor validate the value of donated items.</div>
             `;
             document.getElementById('receipt-modal').classList.add('active');
         }
@@ -441,7 +465,13 @@
         }
 
         function formatDate(dateStr) {
-            const d = new Date(dateStr + 'T00:00:00');
+            if (!dateStr) return '';
+            // Handle both "2026-04-02" and "2026-04-02T00:00:00Z" formats
+            const clean = dateStr.split('T')[0];
+            const parts = clean.split('-');
+            if (parts.length !== 3) return dateStr;
+            const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            if (isNaN(d.getTime())) return dateStr;
             return d.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
         }
         function escapeHtml(str) {

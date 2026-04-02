@@ -11,7 +11,11 @@ func main() {
 		port = "8080"
 	}
 
-	db := initDB("goodwill.db")
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "goodwill.db"
+	}
+	db := initDB(dbPath)
 	defer db.Close()
 
 	srv := newServer(db)
