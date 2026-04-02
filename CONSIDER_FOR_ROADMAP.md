@@ -42,3 +42,7 @@ _Submitted: 2026-04-02 17:44 UTC_
 ## [NORMAL] 2026-04-02 17:45 UTC
 super broken with the categories. have a ux expert look at it. all that displays is the carat
 _Submitted: 2026-04-02 17:45 UTC_
+
+## [NORMAL] 2026-04-02 17:46 UTC
+the receipt doesn't line things up. the disclaimmer needs to say goodwill doesn't substantiate nor validate the value of the donation. still missing the logo! LISTEN TO ME!
+_Submitted: 2026-04-02 17:46 UTC_
