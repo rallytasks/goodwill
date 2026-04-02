@@ -58,3 +58,7 @@ _Submitted: 2026-04-02 17:47 UTC_
 ## [NORMAL] 2026-04-02 17:49 UTC
 put donors by zip beneath the nps comments. make the nps comments scroll or paginate them
 _Submitted: 2026-04-02 17:49 UTC_
+
+## [NORMAL] 2026-04-02 17:50 UTC
+don't make me sign back in after every deployment. make sure you have a database
+_Submitted: 2026-04-02 17:50 UTC_
