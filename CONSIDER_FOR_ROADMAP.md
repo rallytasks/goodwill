@@ -34,3 +34,7 @@ _Submitted: 2026-04-02 17:39 UTC_
 ## [NORMAL] 2026-04-02 17:43 UTC
 you lost my info. make sure you have a database. you haven't asked for nps yet. make sure that works
 _Submitted: 2026-04-02 17:43 UTC_
+
+## [NORMAL] 2026-04-02 17:44 UTC
+the dropdown for items donated is clunky. it should say select category or something on load
+_Submitted: 2026-04-02 17:44 UTC_
