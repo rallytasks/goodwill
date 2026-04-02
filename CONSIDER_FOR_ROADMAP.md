@@ -62,3 +62,7 @@ _Submitted: 2026-04-02 17:49 UTC_
 ## [NORMAL] 2026-04-02 17:50 UTC
 don't make me sign back in after every deployment. make sure you have a database
 _Submitted: 2026-04-02 17:50 UTC_
+
+## [NORMAL] 2026-04-02 17:59 UTC
+the category selector is awful. the categories are not visible until it's opened and when selected they're not displayed
+_Submitted: 2026-04-02 17:59 UTC_
